@@ -8,10 +8,11 @@ In addition to using satellite data, we not only integrate the text information 
 ## Dataset & Pre-trained Models
 
 Dataset:
-Please download the dataset from the link and unzip it ->
+Please download the dataset from the link and unzip it -> https://drive.google.com/file/d/1lICfveVrGHaqTcaM0LG6HLZHorbZdgMh/view?usp=share_link
 
 Pre-trained models:
-
+https://drive.google.com/file/d/1lgi_t6Eq8fbN0rLBrC-GiTVQFr4A2gNj/view?usp=share_link
+https://drive.google.com/file/d/1IkHpf7c1WCs0d7VV1u8wSwYfyCMmKYfA/view?usp=share_link
 
 ## Directory Structure
 
