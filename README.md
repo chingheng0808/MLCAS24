@@ -9,6 +9,7 @@ In addition to using satellite data, we not only integrate the text information 
 
 Dataset:
 Please download the dataset from the link and unzip it -> https://drive.google.com/file/d/1lICfveVrGHaqTcaM0LG6HLZHorbZdgMh/view?usp=share_link
+After unzipping, make the  
 
 Pre-trained models:
 https://drive.google.com/file/d/1lgi_t6Eq8fbN0rLBrC-GiTVQFr4A2gNj/view?usp=share_link
@@ -24,11 +25,6 @@ HI123
 │   │   data1.txt\
 │   │   ...\
 │\
-└───log\
-│   │   mylog_Latest_L1L2_ADP_locstat_64nf_4rb_64h_stepLR_3ai.txt\
-│   │   mylog_Latest_L1L2_ADP_stat_lstm_64nf_4rb_64h_stepLR_3ai.txt\
-│   │   mylog_Latest_L1L2_ADP_stat_lstm_lrc_64nf_4rb_64h_stepLR_3ai.txt\
-│\
 └───MLCAS24_Competition_data/ <-*Dataset*\
 │   └───test\
 │   │   │...\
@@ -38,25 +34,17 @@ HI123
 │   │   │...\
 │\
 └───models\
-│   │   model_L1L2_ADP_locstat_64nf_4rb_64h_stepLR_3ai_epoch-100.pth\
-│   │   model_L1L2_ADP_locstat_64nf_4rb_64h_stepLR_3ai_epoch-200.pth\
-│   │   ...\
-│\
-└───plots\
-│   │   loss_L1L2_ADP_locstat_64nf_4rb_64h_stepLR_3ai.png\
+│   │   model_L1L2_ADP_stat_lstm_64nf_4rb_64h_stepLR_3ai_epoch-800.pth\
 │   │   ...\
 │\
 │   dataset_dul_latest.py\
 │   dataset_fast_latest.py\
 │   dataset_test.py\
 │   generate_data.py\
-│   model_adpW_hist.py\
-│   model_normal_hist.py\
-│   model_normal.py\
-│   model_adp_stat.py\
+│   model_adp_hist.py\
+│   model_transformer_adp_stat.py\
 │   predict_latest.py\
 │   README.md\
-│   train_adpW_hist.py\
 │   train_normal_hist.py\
 │   train_normal.py\
 
