@@ -5,6 +5,14 @@
 The project is using deep learning methods to predict the final corn yield on the MLCAS Dataset.
 In addition to using satellite data, we not only integrate the text information and additional information about the captured area block, but we also specifically use the histogram information on each band as our input feature. We use a multi-model architecture to train the models.
 
+## Dataset & Pre-trained Models
+
+Dataset:
+Please download the dataset from the link and unzip it ->
+
+Pre-trained models:
+
+
 ## Directory Structure
 
 HI123
