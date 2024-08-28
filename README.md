@@ -61,9 +61,7 @@ rasterio=1.2.10
 
 ## Instruction
 
-### 0. Download the pretrained weight and data
-
-https://drive.google.com/drive/folders/1-U2i5f-7DOhYtO2xu2sUo-jNGEri-MvJ?usp=sharing
+### 0. Check the Directory Structure is Correct as Above
 
 ### 1. Generate Data
 
