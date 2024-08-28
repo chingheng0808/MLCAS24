@@ -142,4 +142,4 @@ def coarse_train(batch_size=32, lr=0.0005, epoch=120):
 
 
 if __name__ == "__main__":
-    model_name = coarse_train(batch_size=8, lr=3e-4, epoch=1000)
+    model_name = coarse_train(batch_size=8, lr=3e-4, epoch=800)
