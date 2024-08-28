@@ -63,6 +63,10 @@ rasterio=1.2.10
 
 ## Instruction
 
+### 0. Download the pretrained weight and data
+
+https://drive.google.com/drive/folders/1-U2i5f-7DOhYtO2xu2sUo-jNGEri-MvJ?usp=sharing
+
 ### 1. Generate Data
 
 Run `generate_data.py` to generate our training data using the 2022 and 2023 dataset from the 'MLCAS24_Competition_data' directory.
