@@ -5,7 +5,7 @@ from predict_latest import predict_result
 if not os.path.exists("result_Ensemble"):
     os.makedirs("result_Ensemble")
 
-EPOCH = 200
+EPOCH = 800
 
 df_test = pd.read_csv(
     "MLCAS24_Competition_data/test/Test/GroundTruth/test_HIPS_HYBRIDS_2023_V2.3.csv"
