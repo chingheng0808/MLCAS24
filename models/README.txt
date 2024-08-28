@@ -1,1 +1,1 @@
-Please download the dataset from the link and unzip it: 
+Put the downloaded pre-trained models into the folder.
