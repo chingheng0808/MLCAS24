@@ -74,7 +74,6 @@ python generate_data.py
 ### 2. Training Each Model, Seperately
 
 ```bash
-python train_adpW_hist.py
 python train_normal_hist.py
 python train_normal.py
 ```
