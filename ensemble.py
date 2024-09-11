@@ -24,8 +24,9 @@ result_list = os.listdir("results_test")
 df_list = []
 
 for result in result_list:
-    df = pd.read_csv(f"results_test/{result}")
-    df_list.append(df)
+    if result.split(".")[0].split("-")[1] == str(args.epoch):
+        df = pd.read_csv(f"results_test/{result}")
+        df_list.append(df)
 
 for idx, row in df_test.iterrows():
     mean_yield = 0.0
