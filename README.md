@@ -34,7 +34,7 @@ HI123
 │   │   │...\
 │\
 └───models\
-│   │   model_L1L2_ADP_stat_lstm_64nf_4rb_64h_stepLR_3ai_epoch-800.pth\
+│   │   model_L1L2_ADP_stat_lstm_64nf_4rb_64h_stepLR_3ai_epoch-200.pth\
 │   │   ...\
 │\
 │   dataset_dul_latest.py\
