@@ -56,8 +56,8 @@ numpy=1.21.6
 pandas=1.3.5
 tqdm=4.66.4
 matplotlib=3.5.3
-clip=1.0
-rasterio=1.2.10
+openai-clip=1.0.1
+rasterio=1.3.11
 
 ## Instruction
 
