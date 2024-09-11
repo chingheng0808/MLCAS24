@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, random_split, Dataset
 import matplotlib.pyplot as plt
 import numpy as np
+import torch.nn.functional as F
 
 
 def default_conv(in_channels, out_channels, kernel_size, bias=True):
@@ -147,7 +148,9 @@ class SpectralWiseAttention(nn.Module):
         super(SpectralWiseAttention, self).__init__()
         self.gamma = gamma
         self.reduction = reduction
-        self.conv_qk = nn.Conv2d(in_dim, 2 * in_dim // self.reduction, kernel_size=1, padding=0, stride=1)
+        self.conv_qk = nn.Conv2d(
+            in_dim, 2 * in_dim // self.reduction, kernel_size=1, padding=0, stride=1
+        )
         self.conv_v = nn.Conv2d(in_dim, in_dim, kernel_size=1, padding=0, stride=1)
 
     def forward(self, x):
@@ -165,12 +168,13 @@ class SpectralWiseAttention(nn.Module):
         out = torch.bmm(v, attn.permute(0, 2, 1)).view(b, c, h, w)
         return out * self.gamma + x
 
+
 class PromptAdapter(nn.Module):
     def __init__(self, in_dim, act=nn.ReLU()):
         super(PromptAdapter, self).__init__()
-        self.linear_dw = nn.Linear(in_dim, in_dim//8)
+        self.linear_dw = nn.Linear(in_dim, in_dim // 8)
         self.act = act
-        self.linear_up = nn.Linear(in_dim//8, in_dim)
+        self.linear_up = nn.Linear(in_dim // 8, in_dim)
 
     def forward(self, x):
         res = x
@@ -179,10 +183,43 @@ class PromptAdapter(nn.Module):
         x = self.act(self.linear_up(x) + res)
         return x
 
+
+class SimpleAttention(nn.Module):
+    def __init__(self, in_dim):
+        super(SimpleAttention, self).__init__()
+
+        self.q = nn.Linear(in_dim, in_dim, bias=False)
+        self.k = nn.Linear(in_dim, in_dim, bias=False)
+        self.v = nn.Linear(in_dim, in_dim, bias=False)
+
+        self.scale = 1.0 / (in_dim**0.5)
+
+    def forward(self, x):
+        q = self.q(x)
+        k = self.k(x)
+        v = self.v(x)
+        attention_scores = (
+            torch.matmul(q.unsqueeze(1), k.unsqueeze(1).transpose(-2, -1)) * self.scale
+        )
+        attention_weights = F.softmax(attention_scores, dim=-1)
+        attention_output = torch.matmul(attention_weights, v.unsqueeze(1))
+        attention_output = attention_output.squeeze(1)
+        return attention_output
+
+
 class model_Regression_add(nn.Module):
-    def __init__(self, in_dim, n_feats=32, add_hidden=64, n_resblocks=2, conv=default_conv, img_size=(20, 10), device='cuda'):
+    def __init__(
+        self,
+        in_dim,
+        n_feats=32,
+        add_hidden=64,
+        n_resblocks=2,
+        conv=default_conv,
+        img_size=(20, 10),
+        device="cuda",
+    ):
         super(model_Regression_add, self).__init__()
-        
+
         self.device = device
         reduction = 16
         kernel_size = 3
@@ -196,40 +233,47 @@ class model_Regression_add(nn.Module):
         modules_head = [conv(in_dim, n_feats, kernel_size)]
 
         self.add_block = nn.Sequential(
-            nn.Linear(3+in_dim, self.add_hidden*2, bias=True),
+            nn.Linear(3 + in_dim, self.add_hidden * 2, bias=True),
             nn.LeakyReLU(inplace=True),
-            nn.Linear(self.add_hidden*2, self.add_hidden, bias=True),
+            nn.Linear(self.add_hidden * 2, self.add_hidden, bias=True),
         )
 
-        self.head = nn.Sequential(*modules_head) # b, n_feat, 20, 10
+        self.head = nn.Sequential(*modules_head)  # b, n_feat, 20, 10
 
         self.rg1 = ResidualGroup(
             conv, n_feats, kernel_size, reduction, act, 1, n_resblocks
         )
         self.s_att1 = SpectralWiseAttention(n_feats, gamma=1.0, reduction=reduction)
-        self.conv_dwn1 = self.depwiseSepConv(n_feats, n_feats*2**1, 3) # b, n_feat*2, 10, 5
+        self.conv_dwn1 = self.depwiseSepConv(
+            n_feats, n_feats * 2**1, 3
+        )  # b, n_feat*2, 10, 5
         self.rg2 = ResidualGroup(
-            conv, n_feats*2**1, kernel_size, reduction, act, 1, n_resblocks
+            conv, n_feats * 2**1, kernel_size, reduction, act, 1, n_resblocks
         )
-        self.s_att2 = SpectralWiseAttention(n_feats*2**1, gamma=1.0, reduction=reduction)
-        self.conv_dwn2 = self.depwiseSepConv(n_feats*2**1, n_feats*2**2, 3) # b, n_feat*2, 5, 3
+        self.s_att2 = SpectralWiseAttention(
+            n_feats * 2**1, gamma=1.0, reduction=reduction
+        )
+        self.conv_dwn2 = self.depwiseSepConv(
+            n_feats * 2**1, n_feats * 2**2, 3
+        )  # b, n_feat*2, 5, 3
 
-        self.conv_df = nn.Conv2d(n_feats*2**2, n_feats, 1, 1, 0)
-        
+        self.conv_df = nn.Conv2d(n_feats * 2**2, n_feats, 1, 1, 0)
+
         self.spec_att_d = SpectralWiseAttention(n_feats)
 
         self.lrelu = nn.LeakyReLU(inplace=True)
         self.flatten = nn.Flatten()
         self.mlp1 = Mlp(
-            n_feats*5*3 + add_hidden,
+            n_feats * 5 * 3 + add_hidden,
             n_feats,
             1,
             act_layer=nn.GELU,
             drop=0.0,
         )
         self.add_weight = torch.nn.Parameter(torch.ones(1))
-        
+
         self.adapter = PromptAdapter(512)
+        self.simple_att = SimpleAttention(n_feats * 5 * 3 + add_hidden)
 
     def forward(self, x, prompt, ai):
         stat = torch.mean(x.view(x.shape[0], x.shape[1], -1), dim=2)
@@ -237,19 +281,21 @@ class model_Regression_add(nn.Module):
         x = self.head(x)
         con1 = x
         x = self.rg1(x, prompt)
-        x = self.s_att1(x) + 0.2*con1
+        x = self.s_att1(x) + 0.2 * con1
         x = self.conv_dwn1(x)
         con2 = x
         x = self.rg2(x, prompt)
-        x = self.s_att2(x) + 0.2*con2
+        x = self.s_att2(x) + 0.2 * con2
         x = self.conv_dwn2(x)
 
         x = self.lrelu(self.conv_df(x))
         x = self.spec_att_d(x)
 
-        ai = self.add_block(torch.concat((ai[:, [0,1,3]], stat), dim=1))
-        
-        x = torch.concat((self.flatten(x), self.add_weight*ai), 1)
+        ai = self.add_block(torch.concat((ai[:, [0, 1, 3]], stat), dim=1))
+
+        x = torch.concat((self.flatten(x), self.add_weight * ai), 1)
+        x = self.simple_att(x)
+
         x = self.mlp1(x)
 
         return x
