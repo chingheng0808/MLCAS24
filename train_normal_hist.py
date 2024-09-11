@@ -47,15 +47,15 @@ def plot_loss(x, history):
     plt.savefig(f"./plot/loss_{ARCH}.png")
     # plt.show()
 
+
 def sigmoid_weights(num_matrices, tp_init):
-        x = np.linspace(tp_init-1, tp_init-1+num_matrices-1, num_matrices)  
-        return 1 / (1 + np.exp(-x))
+    x = np.linspace(tp_init - 1, tp_init - 1 + num_matrices - 1, num_matrices)
+    return 1 / (1 + np.exp(-x))
+
 
 def coarse_train(batch_size=32, lr=0.0005, epoch=120):
     # create dataset
-    train_dataset = HIPSDataset_fast(
-        root="/ssd8/chingheng/IPPS/data_latest", single=True, ishist=True
-    )
+    train_dataset = HIPSDataset_fast(root="data_latest", single=True, ishist=True)
 
     # split dataset for training and validation
     train_size = len(train_dataset)
@@ -69,7 +69,9 @@ def coarse_train(batch_size=32, lr=0.0005, epoch=120):
     )
     # define model
     # model = MyModel(in_dim=CHANNEL, img_size=IMGSIZE)
-    model = model_Regression_add(in_dim=CHANNEL, img_size=IMGSIZE, n_feats=64, add_hidden=64, n_resblocks=4)
+    model = model_Regression_add(
+        in_dim=CHANNEL, img_size=IMGSIZE, n_feats=64, add_hidden=64, n_resblocks=4
+    )
     model = nn.DataParallel(model)
     with torch.no_grad():
         model_clip, _ = clip.load("ViT-B/32", device="cuda")
@@ -97,7 +99,13 @@ def coarse_train(batch_size=32, lr=0.0005, epoch=120):
         running_loss_L2 = 0
         model.train()
         for data in train_loader:
-            x, t, gt, ai, hist = data["hsi_all"], data["prompt"], data["gt"], data["add_info"], data["hist"]
+            x, t, gt, ai, hist = (
+                data["hsi_all"],
+                data["prompt"],
+                data["gt"],
+                data["add_info"],
+                data["hist"],
+            )
             optimizer.zero_grad()
             # print(x.shape)
             x = x.to(device).float()
@@ -121,7 +129,7 @@ def coarse_train(batch_size=32, lr=0.0005, epoch=120):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-        t_loss.append(running_loss*batch_size / train_size)
+        t_loss.append(running_loss * batch_size / train_size)
         scheduler.step()
 
         print(

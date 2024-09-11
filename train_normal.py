@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 from dataset_fast_latest import HIPSDataset_fast
-from model_transformer_adp_stat import model_Regression_add
+from model_adp_stat import model_Regression_add
 import clip
 
 if not os.path.exists("log"):
@@ -49,9 +49,7 @@ def plot_loss(x, history):
 
 def coarse_train(batch_size=32, lr=0.0005, epoch=120):
     # create dataset
-    train_dataset = HIPSDataset_fast(
-        root="/ssd8/chingheng/IPPS/data_latest", single=True, ishist=False
-    )
+    train_dataset = HIPSDataset_fast(root="data_latest", single=True, ishist=False)
 
     # split dataset for training and validation
     train_size = len(train_dataset)
@@ -64,7 +62,9 @@ def coarse_train(batch_size=32, lr=0.0005, epoch=120):
         train_dataset, batch_size=batch_size, shuffle=True, num_workers=0
     )
     # define model
-    model = model_Regression_add(in_dim=CHANNEL, img_size=IMGSIZE, n_feats=64, add_hidden=64, n_resblocks=4)
+    model = model_Regression_add(
+        in_dim=CHANNEL, img_size=IMGSIZE, n_feats=64, add_hidden=64, n_resblocks=4
+    )
     model = nn.DataParallel(model)
     with torch.no_grad():
         model_clip, _ = clip.load("ViT-B/32", device="cuda")
@@ -115,7 +115,7 @@ def coarse_train(batch_size=32, lr=0.0005, epoch=120):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-        t_loss.append(running_loss*batch_size / train_size)
+        t_loss.append(running_loss * batch_size / train_size)
         scheduler.step()
 
         print(

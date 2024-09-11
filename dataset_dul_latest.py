@@ -6,12 +6,6 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 
-df1 = pd.read_csv(
-    "/ssd8/chingheng/IPPS/MLCAS24_Competition_data/train/2023/DataPublication_final/GroundTruth/train_HIPS_HYBRIDS_2023_V2.3.csv"
-)
-df2 = pd.read_csv(
-    "/ssd8/chingheng/IPPS/MLCAS24_Competition_data/train/2022/2022/DataPublication_final/GroundTruth/DropNaN_HYBRID_HIPS_V3.5_ALLPLOTS.csv"
-)
 
 def normHSI(R):
     if isinstance(R, torch.Tensor):
@@ -134,7 +128,7 @@ def get_data(row_idx, sheet_path, img_root):
         "row": row,
         "experiment": experiment,
         "range": rangeno,
-        "location": loc
+        "location": loc,
     }
 
     for loc_folder in img_locs:
@@ -167,6 +161,7 @@ def get_data(row_idx, sheet_path, img_root):
 
     return img_path_list, block_infos, tp_idx
 
+
 class HIPSDataset_dul_mulret(Dataset):
     def __init__(self, root, transform=None, location=False):
         self.root = root
@@ -188,14 +183,17 @@ class HIPSDataset_dul_mulret(Dataset):
 
         self.data_length = self.get_data_info(self.sheet_path)
         self.transform = transform
-        
+
         self.sheet1_len = len(pd.read_csv(self.sheet_path[0]))
 
     def __getitem__(self, index):
-        hsi_all = np.zeros((12, 20, 10), dtype=np.float32) 
+        hsi_all = np.zeros((12, 20, 10), dtype=np.float32)
         # hsi = np.zeros((6, 12, 20, 10), dtype=np.float32) #最多6tp
         # filter out those hsi contains half zero values
-        while np.count_nonzero(np.mean(hsi_all[[0,1,2],:,:], axis=0)==0.) >= hsi_all.shape[1]*hsi_all.shape[2]//2:
+        while (
+            np.count_nonzero(np.mean(hsi_all[[0, 1, 2], :, :], axis=0) == 0.0)
+            >= hsi_all.shape[1] * hsi_all.shape[2] // 2
+        ):
             hsi = np.zeros((6, 12, 20, 10), dtype=np.float32)
             img_path_list, block_info, tp_idx = read_data(
                 index, self.sheet_path, self.img_root, self.sheet1_len
@@ -215,13 +213,15 @@ class HIPSDataset_dul_mulret(Dataset):
                     x = torch.nan_to_num(x)
                 else:
                     x = torch.nan_to_num(torch.tensor(x))  # prevent nan in hsi
-                hsi[tp-1] = x
+                hsi[tp - 1] = x
 
-            hsi_all = np.zeros((12, 20, 10), dtype=np.float32) 
+            hsi_all = np.zeros((12, 20, 10), dtype=np.float32)
             weights = self.sigmoid_weights(len(tp_idx), tp_idx[0])
             w_t = sum(weights)
             for i, img_path in enumerate(img_path_list):
-                hsi_all += (weights[i] / w_t) * hsi[tp_idx[i]-1]  # weighted sum of HSI in different time points
+                hsi_all += (weights[i] / w_t) * hsi[
+                    tp_idx[i] - 1
+                ]  # weighted sum of HSI in different time points
 
             index = np.random.randint(0, self.data_length)
 
@@ -236,14 +236,14 @@ class HIPSDataset_dul_mulret(Dataset):
                 block_info["block"],
                 block_info["poundsN2"],
             ]
-        ) 
+        )
 
         self.data = {
             "hsi": hsi,
             "add_info": addInfo,
             "prompt": prompt,
             "gt": torch.tensor([block_info["yieldPerAcre"]]),
-            "hsi_all": hsi_all
+            "hsi_all": hsi_all,
         }
 
         return self.data
@@ -258,7 +258,8 @@ class HIPSDataset_dul_mulret(Dataset):
             df = pd.read_csv(sheet_path[k])
             data_length += len(df)
         return data_length
+
     @staticmethod
     def sigmoid_weights(num_matrices, tp_init):
-        x = np.linspace(tp_init-1, tp_init-1+num_matrices-1, num_matrices)  
+        x = np.linspace(tp_init - 1, tp_init - 1 + num_matrices - 1, num_matrices)
         return 1 / (1 + np.exp(-x))
