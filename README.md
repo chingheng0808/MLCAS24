@@ -12,7 +12,7 @@ Please download the dataset from the link and unzip it -> https://drive.google.c
 After unzipping, replace 'MLCAS24_Competition_data' folder as the unzipped folder.
 
 Pre-trained models:
-https://drive.google.com/file/d/1lgi_t6Eq8fbN0rLBrC-GiTVQFr4A2gNj/view?usp=share_link
+https://drive.google.com/file/d/1lgi_t6Eq8fbN0rLBrC-GiTVQFr4A2gNj/view?usp=share_link\
 https://drive.google.com/file/d/1IkHpf7c1WCs0d7VV1u8wSwYfyCMmKYfA/view?usp=share_link
 
 ## Directory Structure
