@@ -81,7 +81,7 @@ python train_normal.py
 ### 4. Ensemble All Prediction Results
 
 ```bash
-python ensemble.py -epochs=200
+python ensemble.py -epoch=200
 ```
 
 ### 5. Results
